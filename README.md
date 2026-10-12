@@ -4,6 +4,8 @@ A query router that decides **when an AI answer needs live search data** - and g
 
 Built for the **SerpApi India Hackathon 2026**, track: **AI Agents**.
 
+[Watch the 36-second local browser demo](https://github.com/amrrs/live-search-router/releases/tag/demo-v2): stable answering, live retrieval, Search + News, and a repeat with two cache hits / zero new API calls.
+
 ## The idea
 
 LLM apps either search for everything (slow, expensive, and stale-prone answers anyway) or never search (confidently wrong about anything recent). This project puts a routing layer in front:
@@ -58,7 +60,7 @@ Expected output: each query prints its route, why it was routed there, the answe
 
 `python benchmark.py` runs a routing benchmark over 38 hand-labeled queries (plus a small live latency sample, ~6 SerpApi calls). Latest results in `BENCHMARK.md`:
 
-- Routing accuracy (heuristic): 100% (38/38) - see the label-bias caveat in BENCHMARK.md before quoting this
+- Development regression coverage (heuristic): 38/38 after policy fixes; this is not held-out routing accuracy. See BENCHMARK.md.
 - SerpApi searches: 50% fewer than an always-deep-search baseline; 12/38 queries answered with 0 searches
 - Latency: routing decision ~0.01 ms local; current benchmark is offline; earlier live latency is not a current performance guarantee
 
