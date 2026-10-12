@@ -58,9 +58,9 @@ Expected output: each query prints its route, why it was routed there, the answe
 
 `python benchmark.py` runs a routing benchmark over 38 hand-labeled queries (plus a small live latency sample, ~6 SerpApi calls). Latest results in `BENCHMARK.md`:
 
-- Routing accuracy (heuristic): 95% (36/38) - see the label-bias caveat in BENCHMARK.md before quoting this
-- SerpApi searches: 51% fewer than an always-deep-search baseline; 14/38 queries answered with 0 searches
-- Latency: routing decision ~0.01 ms local; SerpApi call ~68 ms avg (live sample)
+- Routing accuracy (heuristic): 100% (38/38) - see the label-bias caveat in BENCHMARK.md before quoting this
+- SerpApi searches: 50% fewer than an always-deep-search baseline; 12/38 queries answered with 0 searches
+- Latency: routing decision ~0.01 ms local; current benchmark is offline; earlier live latency is not a current performance guarantee
 
 ## Files
 
@@ -83,3 +83,11 @@ Expected output: each query prints its route, why it was routed there, the answe
 Copy `.env.example` to `.env`, add your SerpApi key and optional ANSWER_LLM settings, then run `python3 app.py` and open http://127.0.0.1:8765. The browser offers examples for all three routes, source links and per-answer/session search counts. Secrets are only read by the local server. Direct routing works without a SerpApi key; answering arbitrary stable questions requires an answer LLM. Without one, the UI explicitly reports that no answer model is configured.
 
 AI disclosure: the initial project was supplied by the participant as a Drive ZIP with prior AI assistance; Codex reviewed it, fixed the direct-answer path and numbered citations, and added/tested the local browser demo. Nebius Token Factory provides optional answer synthesis.
+
+## Conservative freshness policy and observable retrieval
+
+The heuristic now uses token boundaries, recognizes changing office holders, rain/weather and local discovery, and defaults unfamiliar intents to a live lookup. Only recognized stable intents take the direct route. This deliberately prefers spending a search over silently treating uncertainty as timeless knowledge. It is a transparent policy, not a calibrated probability classifier.
+
+SQLite caches retrieval payloads for 300 seconds, keyed by engine/query/parameters with secrets excluded. Set SEARCH_CACHE_TTL=0 to disable, or change SEARCH_CACHE_PATH. Each answer distinguishes planned engine lookups, actual network searches and cache hits; the trace shows engine, hit/miss, age and latency. Google + News results deduplicate exact URLs. Empty retrieval abstains. Invalid citation numbers trigger extractive fallback. Source snippets are untrusted data in the synthesis system prompt. This mitigates prompt injection; it does not prove source reliability or entailment.
+
+The revised 38-query regression set scores 38/38 after fixing the original rain/local cases and correcting the Prime Minister label to require live search. This set informed development, so 100% is regression coverage, not held-out accuracy. There are 38 planned searches vs 76 always-deep, but no savings vs the always-one-search baseline on this mix. Caching saves repeated network calls separately. Run `python3 -m unittest discover` for nine tests covering freshness, no-key direct routing, cache expiry, empty evidence and invalid citations.

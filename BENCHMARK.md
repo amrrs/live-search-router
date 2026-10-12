@@ -1,10 +1,10 @@
 # Benchmark results - live-search-router
 
-Run: 2026-10-12 18:36 IST (live latency sample)
+Run: 2026-10-12 21:56 IST (offline)
 
 ## Routing accuracy (HeuristicRouter)
 
-- 36/38 correct = **95%** (38 hand-labeled queries; see label-bias caveat below)
+- 38/38 correct = **100%** (38 hand-labeled queries; see label-bias caveat below)
 
 | query | expected | routed | ok |
 |---|---|---|---|
@@ -31,7 +31,7 @@ Run: 2026-10-12 18:36 IST (live latency sample)
 | Who is the current CEO of X? | search_and_answer | search_and_answer | yes |
 | Recent layoffs announced by tech companies | search_and_answer | search_and_answer | yes |
 | Today's gold rate in Chennai | search_and_answer | search_and_answer | yes |
-| Best pizza places in Bengaluru | search_and_answer | deep_research | MISS |
+| Best pizza places in Bengaluru | search_and_answer | search_and_answer | yes |
 | Compare Fireworks AI vs Baseten vs Together AI for LLM infer | deep_research | deep_research | yes |
 | Best open-source LLMs for code generation in 2026 | deep_research | deep_research | yes |
 | Pros and cons of RAG vs fine-tuning | deep_research | deep_research | yes |
@@ -44,41 +44,24 @@ Run: 2026-10-12 18:36 IST (live latency sample)
 | Market landscape for AI coding assistants | deep_research | deep_research | yes |
 | Latest benchmarks: GPT-5 vs Gemini | deep_research | deep_research | yes |
 | Research the best vector databases for RAG applications | deep_research | deep_research | yes |
-| Is it raining in Mumbai? | search_and_answer | direct | MISS |
-| Who is the Prime Minister of India? | direct | direct | yes |
+| Is it raining in Mumbai? | search_and_answer | search_and_answer | yes |
+| Who is the Prime Minister of India? | search_and_answer | search_and_answer | yes |
 
-Misses: 2
-- "Best pizza places in Bengaluru" - expected search_and_answer, got deep_research
-- "Is it raining in Mumbai?" - expected search_and_answer, got direct
+Misses: 0
 
 ## SerpApi searches spent (computed from routing decisions, no live calls)
 
 | policy | searches over the 38-query set |
 |---|---|
-| router (this project) | 37 |
+| router (this project) | 38 |
 | always 1 search | 38 |
 | always deep (2 engines) | 76 |
 
-Router saves **51%** of searches vs always-deep; vs always-1-search it spends -1 extra (deep routes use 2 engines by design). The direct route is the real win: 14 queries answered with 0 searches and no stale-data risk.
+Router saves **50%** of searches vs always-deep; vs always-1-search it spends +0 extra (deep routes use 2 engines by design). The direct route is the real win: 12 queries answered with 0 searches with no search calls.
 
 ## Latency
 
-- Routing decision (local, heuristic): avg 0.01 ms over 38 queries
-- SerpApi call (live, 6 calls): avg 68 ms (min 49, max 89)
-  - google: 66 ms
-  - google: 72 ms
-  - google: 89 ms
-  - google: 67 ms
-  - google_news: 68 ms
-  - google_news: 49 ms
-
-End-to-end estimate per route (route + searches x avg SerpApi latency):
-
-| route | searches | est. latency |
-|---|---|---|
-| direct | 0 | ~0 ms |
-| search_and_answer | 1 | ~69 ms |
-| deep_research | 2 | ~137 ms |
+- Routing decision (local, heuristic): avg 0.10 ms over 38 queries
 
 ## Caveats
 

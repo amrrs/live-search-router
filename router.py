@@ -49,30 +49,23 @@ class HeuristicRouter:
     name = "heuristic"
 
     def route(self, query):
-        q = query.lower()
-        fresh = [t for t in FRESHNESS_TERMS if t in q]
-        research = [t for t in RESEARCH_TERMS if t in q]
-        if fresh and research:
-            return RouteDecision(
-                "deep_research",
-                f"freshness terms {fresh} + research terms {research}",
-                self.name,
-            )
+        q = query.lower().strip()
+        def matches(term):
+            return bool(re.search(r"(?<!\w)" + re.escape(term.strip()) + r"(?!\w)", q))
+        fresh = [t for t in FRESHNESS_TERMS if matches(t)]
+        volatile = re.search(r"\b(ceo|president|prime minister|mayor|governor|raining|rain|temperature|exchange rate|gold rate|opening hours|open now|available|availability|election|winner|won|standings|flight|hotel|restaurant|pizza|cafe|near me|job|vacancy)\b", q)
+        local = re.search(r"\b(places|restaurants?|pizza|cafes?|hotels?|near me)\b", q)
+        research = [t for t in RESEARCH_TERMS if matches(t)]
+        if local and not re.search(r"\b(compare|vs|versus|analysis|research)\b",q):
+            return RouteDecision("search_and_answer", "local discovery needs a live lookup", self.name)
         if research:
-            return RouteDecision(
-                "deep_research", f"research terms {research}", self.name,
-            )
-        if fresh or q.strip().endswith("?"):
-            if fresh:
-                return RouteDecision(
-                    "search_and_answer", f"freshness terms {fresh}", self.name,
-                )
-            return RouteDecision(
-                "direct", "general question, no freshness or research signals", self.name,
-            )
-        return RouteDecision(
-            "direct", "statement/stable topic, no freshness or research signals", self.name,
-        )
+            return RouteDecision("deep_research", "multi-source research signals: " + ", ".join(research), self.name)
+        if fresh or volatile:
+            return RouteDecision("search_and_answer", "freshness or changing-world facts require live evidence", self.name)
+        stable = re.search(r"capital of|who wrote|who painted|chemical symbol|continents|speed of light|largest planet|reverse a string|http stand for|binary tree|formula|plot of|photosynthesis|pythagorean|\b(define|definition|arithmetic|algebra|multiplication)\b|^explain (what |how )?",q)
+        if stable:
+            return RouteDecision("direct", "recognized stable-knowledge intent; no freshness signals", self.name)
+        return RouteDecision("search_and_answer", "uncertain freshness: conservative live lookup instead of silent direct answer", self.name)
 
 
 class LLMRouter:

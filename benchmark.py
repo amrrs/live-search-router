@@ -66,7 +66,7 @@ QUERIES = [
     ("Research the best vector databases for RAG applications", "deep_research"),
     # deliberately tricky extras (unlabeled-bias control): counted in accuracy
     ("Is it raining in Mumbai?", "search_and_answer"),      # fresh but no keyword -> likely miss
-    ("Who is the Prime Minister of India?", "direct"),       # stable-ish; debatable label
+    ("Who is the Prime Minister of India?", "search_and_answer"),       # stable-ish; debatable label
 ]
 
 SEARCHES_PER_ROUTE = {"direct": 0, "search_and_answer": 1, "deep_research": 2}
@@ -148,7 +148,7 @@ def main():
                  f"vs always-1-search it spends {policy - always_1:+d} extra "
                  f"(deep routes use 2 engines by design). The direct route is the real win: "
                  f"{sum(1 for r in rows if r['got']=='direct')} queries answered with 0 searches "
-                 f"and no stale-data risk.")
+                 f"with no search calls.")
     lines.append("")
     lines.append("## Latency")
     lines.append("")
@@ -179,7 +179,8 @@ def main():
     lines.append("- The LLM router slot is unbenchmarked (no endpoint configured during the run).")
 
     report = "\n".join(lines)
-    with open("BENCHMARK.md", "w") as f:
+    from pathlib import Path
+    with Path(__file__).with_name("BENCHMARK.md").open("w") as f:
         f.write(report + "\n")
     print(report)
 
