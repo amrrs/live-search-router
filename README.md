@@ -4,7 +4,7 @@ A query router that decides **when an AI answer needs live search data** - and g
 
 Built for the **SerpApi India Hackathon 2026**, track: **AI Agents**.
 
-[Watch the 36-second local browser demo](https://github.com/amrrs/live-search-router/releases/tag/demo-v2): stable answering, live retrieval, Search + News, and a repeat with two cache hits / zero new API calls.
+[Watch the 36-second narrated local browser demo](https://github.com/amrrs/live-search-router/releases/tag/demo-v3): stable answering, live retrieval, Search + News, and a repeat with two cache hits / zero new API calls.
 
 ## The idea
 
@@ -93,3 +93,5 @@ The heuristic now uses token boundaries, recognizes changing office holders, rai
 SQLite caches retrieval payloads for 300 seconds, keyed by engine/query/parameters with secrets excluded. Set SEARCH_CACHE_TTL=0 to disable, or change SEARCH_CACHE_PATH. Each answer distinguishes planned engine lookups, actual network searches and cache hits; the trace shows engine, hit/miss, age and latency. Google + News results deduplicate exact URLs. Empty retrieval abstains. Invalid citation numbers trigger extractive fallback. Source snippets are untrusted data in the synthesis system prompt. This mitigates prompt injection; it does not prove source reliability or entailment.
 
 The revised 38-query regression set scores 38/38 after fixing the original rain/local cases and correcting the Prime Minister label to require live search. This set informed development, so 100% is regression coverage, not held-out accuracy. There are 38 planned searches vs 76 always-deep, but no savings vs the always-one-search baseline on this mix. Caching saves repeated network calls separately. Run `python3 -m unittest discover` for nine tests covering freshness, no-key direct routing, cache expiry, empty evidence and invalid citations.
+
+The demo narration uses ElevenLabs TTS Turbo v2.5 through fal.ai. The real ScreenStudioly video is preserved, with synchronized narration and selectable English subtitles.
